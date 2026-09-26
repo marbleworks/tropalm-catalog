@@ -28,8 +28,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # --check-urls asks GitHub for every runtime part: one published at another length than its
+      # entry fails the run; one not published yet (the release is still to be pushed) is a warning.
       - name: Check the catalog
-        run: python validate.py v1/models.json
+        run: python validate.py v1/models.json --check-urls
       - name: A change raises the revision
         if: github.event_name == 'pull_request'
         run: |

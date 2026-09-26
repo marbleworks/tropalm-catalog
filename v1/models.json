@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 2,
+  "revision": 5,
   "models": [
     {
       "id": "qwen3.5-9b-q4_k_m",
@@ -79,6 +79,10 @@
       },
       "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
       "bytes": 574041195,
+      "licence": {
+        "name": "MIT",
+        "url": "https://huggingface.co/openai/whisper-large-v3-turbo"
+      },
       "minGameVersion": 1
     },
     {
@@ -92,6 +96,10 @@
       },
       "sha256": "8d18c94acb2addd042f97da63c98be144eafa76d0d9495177eab65130cf85129",
       "bytes": 1035965280,
+      "licence": {
+        "name": "Apache-2.0",
+        "url": "https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-Base"
+      },
       "minGameVersion": 1
     },
     {
@@ -105,6 +113,10 @@
       },
       "sha256": "6fd65188839bcd6ecc91b277ad471e22a0edfada4699a0fe82f1165c18cfcce2",
       "bytes": 446422912,
+      "licence": {
+        "name": "Apache-2.0",
+        "url": "https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-Base"
+      },
       "minGameVersion": 1
     },
     {
@@ -116,6 +128,10 @@
       },
       "sha256": "28e071c7219f73c08b7e644b835d4f819d26052063ed835e81f3bfb5a08e7546",
       "bytes": 259332,
+      "licence": {
+        "name": "Public domain",
+        "url": "https://archive.org/details/jane_eyre_ver03_0809_librivox"
+      },
       "minGameVersion": 1
     },
     {
@@ -127,6 +143,10 @@
       },
       "sha256": "f8f3675886ad41ab7c2b847ece76b3dc4463658e2ca0c1a585fe28c6bf444ab1",
       "bytes": 355826,
+      "licence": {
+        "name": "Public domain",
+        "url": "https://archive.org/details/jekyll_and_hyde_librivox"
+      },
       "minGameVersion": 1
     },
     {
@@ -138,6 +158,10 @@
       },
       "sha256": "8548b804ed901a36356ca0c88071cfc30bb86db567dcf8d997284b8f74f2662e",
       "bytes": 251548,
+      "licence": {
+        "name": "Public domain",
+        "url": "https://archive.org/details/a_study_in_scarlet_1406_librivox"
+      },
       "minGameVersion": 1
     },
     {
@@ -149,6 +173,10 @@
       },
       "sha256": "d7d54a14bf155334cb48c9a360cdef0b6db11f23fe2600ea390fd63948f27f98",
       "bytes": 179756,
+      "licence": {
+        "name": "CC0-1.0",
+        "url": "https://creativecommons.org/publicdomain/zero/1.0/"
+      },
       "minGameVersion": 1
     },
     {
@@ -160,6 +188,10 @@
       },
       "sha256": "deaa8803756c8588ee3647c6809fac7c04cdf732ee8865b838f0c855e72747b9",
       "bytes": 196140,
+      "licence": {
+        "name": "CC0-1.0",
+        "url": "https://creativecommons.org/publicdomain/zero/1.0/"
+      },
       "minGameVersion": 1
     },
     {
@@ -171,8 +203,151 @@
       },
       "sha256": "42b7b0854c23f39ce649af29bfb4e34bf7ba0820a0584f875315c11a0f7de270",
       "bytes": 237100,
+      "licence": {
+        "name": "CC0-1.0",
+        "url": "https://creativecommons.org/publicdomain/zero/1.0/"
+      },
       "minGameVersion": 1
     }
   ],
-  "runtimes": []
+  "runtimes": [
+    {
+      "id": "whisper-server-b5130-win-cpu-x64",
+      "name": "whisper-server (CPU)",
+      "program": "whisper-server",
+      "build": "cpu",
+      "os": "windows",
+      "arch": "x64",
+      "parts": [
+        {
+          "url": "https://github.com/ggml-org/whisper.cpp/releases/download/b5130/whisper-bin-x64.zip",
+          "sha256": "f9ec6c52a2e949b62ab51fa21d0d497958f9e41c3010c157c4e42932d5316f3c",
+          "bytes": 8573270
+        }
+      ],
+      "unpack": "zip",
+      "unpackedBytes": 21790208,
+      "exe": "Release/whisper-server.exe",
+      "licence": {
+        "name": "MIT",
+        "url": "https://github.com/ggml-org/whisper.cpp/blob/b5130/LICENSE"
+      },
+      "minGameVersion": 1
+    },
+    {
+      "id": "whisper-server-b5130-win-cuda-12.4-x64",
+      "name": "whisper-server (CUDA 12.4)",
+      "program": "whisper-server",
+      "build": "cuda",
+      "os": "windows",
+      "arch": "x64",
+      "parts": [
+        {
+          "url": "https://github.com/ggml-org/whisper.cpp/releases/download/b5130/whisper-cublas-12.4.0-bin-x64.zip",
+          "sha256": "af520ddd034d985b55dfeea3e465ed93653ba2aee1a55e865033edc548c272a7",
+          "bytes": 674539285
+        }
+      ],
+      "unpack": "zip",
+      "unpackedBytes": 1191220736,
+      "exe": "Release/whisper-server.exe",
+      "licence": {
+        "name": "MIT",
+        "url": "https://github.com/ggml-org/whisper.cpp/blob/b5130/LICENSE"
+      },
+      "minGameVersion": 1
+    },
+    {
+      "id": "voicevox-engine-0.25.2-win-cpu-x64",
+      "name": "VOICEVOX ENGINE 0.25.2 (CPU)",
+      "program": "voicevox",
+      "build": "cpu",
+      "os": "windows",
+      "arch": "x64",
+      "parts": [
+        {
+          "url": "https://github.com/VOICEVOX/voicevox_engine/releases/download/0.25.2/voicevox_engine-windows-cpu-0.25.2.vvpp",
+          "sha256": "cae07cb718866708d8c6148988769966168a2282610f53f002b19778ebea38e9",
+          "bytes": 1894411533
+        }
+      ],
+      "unpack": "zip",
+      "unpackedBytes": 2161482198,
+      "exe": "run.exe",
+      "licence": {
+        "name": "LGPL-3.0 + VOICEVOX terms of use",
+        "url": "https://github.com/VOICEVOX/voicevox_engine/blob/0.25.2/LICENSE"
+      },
+      "minGameVersion": 1
+    },
+    {
+      "id": "voicevox-engine-0.25.2-macos-arm64",
+      "name": "VOICEVOX ENGINE 0.25.2",
+      "program": "voicevox",
+      "build": "cpu",
+      "os": "macos",
+      "arch": "arm64",
+      "parts": [
+        {
+          "url": "https://github.com/VOICEVOX/voicevox_engine/releases/download/0.25.2/voicevox_engine-macos-arm64-0.25.2.vvpp",
+          "sha256": "1ba776700d2afa81382573de52961ebaa33ee26c2aedc8d3ed78782a4e1538fb",
+          "bytes": 1887128088
+        }
+      ],
+      "unpack": "zip",
+      "unpackedBytes": 2140998577,
+      "exe": "run",
+      "licence": {
+        "name": "LGPL-3.0 + VOICEVOX terms of use",
+        "url": "https://github.com/VOICEVOX/voicevox_engine/blob/0.25.2/LICENSE"
+      },
+      "minGameVersion": 1
+    },
+    {
+      "id": "llama-tts-server-435d411-win-cpu-x64",
+      "name": "Speech server (CPU)",
+      "program": "llama-tts-server",
+      "build": "cpu",
+      "os": "windows",
+      "arch": "x64",
+      "parts": [
+        {
+          "url": "https://github.com/marbleworks/tropalm-runtime/releases/download/llama-tts-server-435d411/llama-tts-server-435d411-win-cpu-x64.zip",
+          "sha256": "02891b12608c0971b697264f885100aebd395adb61f8b676103b755114f5333e",
+          "bytes": 11222438
+        }
+      ],
+      "unpack": "zip",
+      "unpackedBytes": 30671260,
+      "exe": "llama-server.exe",
+      "licence": {
+        "name": "MIT",
+        "url": "https://github.com/ggml-org/llama.cpp/blob/435d4116eda2abbcdc3d63d85204470070f32705/LICENSE"
+      },
+      "minGameVersion": 1
+    },
+    {
+      "id": "llama-tts-server-435d411-win-cuda-x64",
+      "name": "Speech server (CUDA)",
+      "program": "llama-tts-server",
+      "build": "cuda",
+      "os": "windows",
+      "arch": "x64",
+      "parts": [
+        {
+          "url": "https://github.com/marbleworks/tropalm-runtime/releases/download/llama-tts-server-435d411/llama-tts-server-435d411-win-cuda-x64.zip",
+          "sha256": "10ef53c1c4c532d567f302800135255bffbaaf56ee90754dd81bfbde8b8755ff",
+          "bytes": 760054147
+        }
+      ],
+      "unpack": "zip",
+      "unpackedBytes": 1058930634,
+      "exe": "llama-server.exe",
+      "licence": {
+        "name": "MIT",
+        "url": "https://github.com/ggml-org/llama.cpp/blob/435d4116eda2abbcdc3d63d85204470070f32705/LICENSE"
+      },
+      "minGameVersion": 1
+    }
+  ]
 }
