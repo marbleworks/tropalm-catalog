@@ -1,0 +1,178 @@
+{
+  "schema": 1,
+  "revision": 2,
+  "models": [
+    {
+      "id": "qwen3.5-9b-q4_k_m",
+      "name": "Qwen3.5 9B",
+      "file": "Qwen3.5-9B-Q4_K_M.gguf",
+      "source": {
+        "repo": "unsloth/Qwen3.5-9B-GGUF",
+        "revision": "3885219b6810b007914f3a7950a8d1b469d598a5",
+        "path": "Qwen3.5-9B-Q4_K_M.gguf"
+      },
+      "sha256": "03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8",
+      "bytes": 5680522464,
+      "vramMiB": 6628,
+      "contextTokens": 32768,
+      "tier": "recommended",
+      "minGameVersion": 1
+    },
+    {
+      "id": "qwen3-4b-instruct-2507-q4_k_m",
+      "name": "Qwen3 4B Instruct 2507",
+      "file": "Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+      "source": {
+        "repo": "unsloth/Qwen3-4B-Instruct-2507-GGUF",
+        "revision": "a06e946bb6b655725eafa393f4a9745d460374c9",
+        "path": "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+      },
+      "sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
+      "bytes": 2497281120,
+      "vramMiB": 7217,
+      "contextTokens": 32768,
+      "tier": "supported",
+      "minGameVersion": 1
+    },
+    {
+      "id": "qwen3.6-35b-a3b-ud-q2_k_xl",
+      "name": "Qwen3.6 35B A3B",
+      "file": "Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf",
+      "source": {
+        "repo": "unsloth/Qwen3.6-35B-A3B-GGUF",
+        "revision": "a483e9e6cbd595906af30beda3187c2663a1118c",
+        "path": "Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf"
+      },
+      "sha256": "96b9c0af5c77a4ecaabe3983175112b5ece763261c1ece12b2494b692a70dad7",
+      "bytes": 12290628576,
+      "vramMiB": 12827,
+      "contextTokens": 32768,
+      "tier": "supported",
+      "minGameVersion": 1
+    },
+    {
+      "id": "qwen2.5-0.5b-instruct-q4_k_m",
+      "name": "Qwen2.5 0.5B Instruct",
+      "file": "Qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
+      "source": {
+        "repo": "bartowski/Qwen2.5-0.5B-Instruct-GGUF",
+        "revision": "41ba88dbac95fed2528c92514c131d73eb5a174b",
+        "path": "Qwen2.5-0.5B-Instruct-Q4_K_M.gguf"
+      },
+      "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653",
+      "bytes": 397808192,
+      "vramMiB": 953,
+      "contextTokens": 32768,
+      "tier": "experimental",
+      "minGameVersion": 1
+    }
+  ],
+  "voice": [
+    {
+      "id": "whisper-large-v3-turbo-q5_0",
+      "name": "Whisper large-v3-turbo",
+      "file": "ggml-large-v3-turbo-q5_0.bin",
+      "source": {
+        "repo": "ggerganov/whisper.cpp",
+        "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+        "path": "ggml-large-v3-turbo-q5_0.bin"
+      },
+      "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
+      "bytes": 574041195,
+      "minGameVersion": 1
+    },
+    {
+      "id": "qwen3-tts-1.7b-base-q4_k_m",
+      "name": "Qwen3-TTS 1.7B Base",
+      "file": "Qwen3-TTS-12Hz-1.7B-Base-Q4_K_M.gguf",
+      "source": {
+        "repo": "ggml-org/Qwen3-TTS-12Hz-1.7B-Base-GGUF",
+        "revision": "ca27d74bc954b73dadab5b71ca265d87fc861a7c",
+        "path": "Qwen3-TTS-12Hz-1.7B-Base-Q4_K_M.gguf"
+      },
+      "sha256": "8d18c94acb2addd042f97da63c98be144eafa76d0d9495177eab65130cf85129",
+      "bytes": 1035965280,
+      "minGameVersion": 1
+    },
+    {
+      "id": "qwen3-tts-1.7b-base-mmproj-q8_0",
+      "name": "Qwen3-TTS 1.7B Base codec",
+      "file": "mmproj-Qwen3-TTS-12Hz-1.7B-Base-Q8_0.gguf",
+      "source": {
+        "repo": "ggml-org/Qwen3-TTS-12Hz-1.7B-Base-GGUF",
+        "revision": "ca27d74bc954b73dadab5b71ca265d87fc861a7c",
+        "path": "mmproj-Qwen3-TTS-12Hz-1.7B-Base-Q8_0.gguf"
+      },
+      "sha256": "6fd65188839bcd6ecc91b277ad471e22a0edfada4699a0fe82f1165c18cfcce2",
+      "bytes": 446422912,
+      "minGameVersion": 1
+    },
+    {
+      "id": "voice-librivox-janeeyre-klett-f",
+      "name": "LibriVox: Elizabeth Klett",
+      "file": "librivox-janeeyre-klett-f.wav",
+      "source": {
+        "catalog": "voices/librivox-janeeyre-klett-f.wav"
+      },
+      "sha256": "28e071c7219f73c08b7e644b835d4f819d26052063ed835e81f3bfb5a08e7546",
+      "bytes": 259332,
+      "minGameVersion": 1
+    },
+    {
+      "id": "voice-librivox-jekyll-barnes-m",
+      "name": "LibriVox: David Barnes",
+      "file": "librivox-jekyll-barnes-m.wav",
+      "source": {
+        "catalog": "voices/librivox-jekyll-barnes-m.wav"
+      },
+      "sha256": "f8f3675886ad41ab7c2b847ece76b3dc4463658e2ca0c1a585fe28c6bf444ab1",
+      "bytes": 355826,
+      "minGameVersion": 1
+    },
+    {
+      "id": "voice-librivox-scarlet-dixon-m",
+      "name": "LibriVox: Robert Dixon",
+      "file": "librivox-scarlet-dixon-m.wav",
+      "source": {
+        "catalog": "voices/librivox-scarlet-dixon-m.wav"
+      },
+      "sha256": "8548b804ed901a36356ca0c88071cfc30bb86db567dcf8d997284b8f74f2662e",
+      "bytes": 251548,
+      "minGameVersion": 1
+    },
+    {
+      "id": "voice-commonvoice-ja-f",
+      "name": "Common Voice: ja, female",
+      "file": "commonvoice-ja-f.wav",
+      "source": {
+        "catalog": "voices/commonvoice-ja-f.wav"
+      },
+      "sha256": "d7d54a14bf155334cb48c9a360cdef0b6db11f23fe2600ea390fd63948f27f98",
+      "bytes": 179756,
+      "minGameVersion": 1
+    },
+    {
+      "id": "voice-commonvoice-ja-m",
+      "name": "Common Voice: ja, male",
+      "file": "commonvoice-ja-m.wav",
+      "source": {
+        "catalog": "voices/commonvoice-ja-m.wav"
+      },
+      "sha256": "deaa8803756c8588ee3647c6809fac7c04cdf732ee8865b838f0c855e72747b9",
+      "bytes": 196140,
+      "minGameVersion": 1
+    },
+    {
+      "id": "voice-commonvoice-en-m",
+      "name": "Common Voice: en, male",
+      "file": "commonvoice-en-m.wav",
+      "source": {
+        "catalog": "voices/commonvoice-en-m.wav"
+      },
+      "sha256": "42b7b0854c23f39ce649af29bfb4e34bf7ba0820a0584f875315c11a0f7de270",
+      "bytes": 237100,
+      "minGameVersion": 1
+    }
+  ],
+  "runtimes": []
+}

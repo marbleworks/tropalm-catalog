@@ -1,0 +1,58 @@
+# Publishes the model catalog to GitHub Pages. Lives in the catalog repository's root; inside the
+# game repository (catalog/.github/) it is inert -- GitHub only runs workflows from a repository's
+# own top-level .github/workflows. See docs/ops/model_catalog.md in the game repository.
+name: Publish the model catalog
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check the catalog
+        run: python validate.py v1/models.json
+      - name: A change raises the revision
+        if: github.event_name == 'pull_request'
+        run: |
+          git show "origin/${{ github.base_ref }}:v1/models.json" > /tmp/base.json 2>/dev/null || echo '{}' > /tmp/base.json
+          python validate.py v1/models.json --against /tmp/base.json
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      # Only the catalog is published. The validator and this workflow stay in the repository.
+      - name: Stage the site
+        run: |
+          mkdir -p _site
+          cp -r v1 _site/
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
