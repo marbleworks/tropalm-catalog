@@ -1,7 +1,6 @@
 {
   "schema": 1,
-  "revision": 6,
-  "rig": "dfcf5db2",
+  "revision": 7,
   "models": [
     {
       "id": "qwen3.5-9b-q4_k_m",
@@ -15,50 +14,9 @@
       "sha256": "03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8",
       "bytes": 5680522464,
       "vramMiB": 6628,
-      "contextTokens": 32768,
-      "tier": "recommended",
-      "minGameVersion": 1,
-      "rigRuns": [
-        {
-          "run": "mr6-qwen3.5-9b-plus",
-          "date": "2026-09-19",
-          "rig": "dfcf5db2",
-          "variant": "plus",
-          "errands": 7.5,
-          "of": 10,
-          "sPerAct": 21.3,
-          "machine": {
-            "name": "NVIDIA GeForce RTX 5060 Ti",
-            "probeTokPerS": 497.3
-          }
-        },
-        {
-          "run": "mr7-qwen3.5-9b-plus-run2",
-          "date": "2026-09-19",
-          "rig": "dfcf5db2",
-          "variant": "plus",
-          "errands": 7.5,
-          "of": 10,
-          "sPerAct": 13.6,
-          "machine": {
-            "name": "NVIDIA GeForce RTX 5060 Ti",
-            "probeTokPerS": 497.3
-          }
-        },
-        {
-          "run": "mr7-qwen3.5-9b-plus-run3",
-          "date": "2026-09-19",
-          "rig": "dfcf5db2",
-          "variant": "plus",
-          "errands": 7.5,
-          "of": 10,
-          "sPerAct": 15.5,
-          "machine": {
-            "name": "NVIDIA GeForce RTX 5060 Ti",
-            "probeTokPerS": 497.3
-          }
-        }
-      ]
+      "smart": 5,
+      "fast": 4,
+      "minGameVersion": 1
     },
     {
       "id": "qwen3-4b-instruct-2507-q4_k_m",
@@ -72,8 +30,6 @@
       "sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
       "bytes": 2497281120,
       "vramMiB": 7217,
-      "contextTokens": 32768,
-      "tier": "supported",
       "minGameVersion": 1
     },
     {
@@ -88,50 +44,9 @@
       "sha256": "96b9c0af5c77a4ecaabe3983175112b5ece763261c1ece12b2494b692a70dad7",
       "bytes": 12290628576,
       "vramMiB": 12827,
-      "contextTokens": 32768,
-      "tier": "supported",
-      "minGameVersion": 1,
-      "rigRuns": [
-        {
-          "run": "mr7-qwen3.6-35b-a3b-plus",
-          "date": "2026-09-19",
-          "rig": "dfcf5db2",
-          "variant": "plus",
-          "errands": 6.5,
-          "of": 10,
-          "sPerAct": 14.6,
-          "machine": {
-            "name": "NVIDIA GeForce RTX 5060 Ti",
-            "probeTokPerS": 497.3
-          }
-        },
-        {
-          "run": "mr8-qwen3.6-35b-a3b-plus-run2",
-          "date": "2026-09-19",
-          "rig": "dfcf5db2",
-          "variant": "plus",
-          "errands": 7.4,
-          "of": 10,
-          "sPerAct": 15.6,
-          "machine": {
-            "name": "NVIDIA GeForce RTX 5060 Ti",
-            "probeTokPerS": 497.3
-          }
-        },
-        {
-          "run": "mr8-qwen3.6-35b-a3b-plus-run3",
-          "date": "2026-09-19",
-          "rig": "dfcf5db2",
-          "variant": "plus",
-          "errands": 6.6,
-          "of": 10,
-          "sPerAct": 14.3,
-          "machine": {
-            "name": "NVIDIA GeForce RTX 5060 Ti",
-            "probeTokPerS": 497.3
-          }
-        }
-      ]
+      "smart": 5,
+      "fast": 4,
+      "minGameVersion": 1
     },
     {
       "id": "qwen2.5-0.5b-instruct-q4_k_m",
@@ -145,8 +60,6 @@
       "sha256": "6eb923e7d26e9cea28811e1a8e852009b21242fb157b26149d3b188f3a8c8653",
       "bytes": 397808192,
       "vramMiB": 953,
-      "contextTokens": 32768,
-      "tier": "experimental",
       "minGameVersion": 1
     }
   ],

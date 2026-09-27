@@ -19,9 +19,12 @@ its shape here; with --check-urls each part is also asked for on GitHub. A part 
 published yet (404: the release is the owner's to push) is a warning and does not fail the run; a
 part published at another length than the entry says is a problem.
 
-A model may carry the behaviour rig's runs on it (rigRuns: the raw score, its denominator, the
-seconds per act, and where it ran); a document that does names the rig its ratings are read on (rig),
-and at least one run must be of it.
+The catalog is a download manifest (owner, 2026-09-27): a model's information and where to fetch
+it, and nothing else. A model may carry two ratings, smart and fast, whole numbers from 1 to
+RATING_STEPS that scripts/model_catalog.py rate computed from the repository's ledger of the
+behaviour rig's runs before publishing; the runs themselves are not published. A field that is not
+in the manifest's lists (DOCUMENT_FIELDS, MODEL_FIELDS, VOICE_FIELDS) is refused: the tier, the
+context window, the runs and the rig they were read on left the document in revision 7.
 
 Exit 0 when the file is publishable, 1 with one line per problem otherwise.
 """
@@ -35,11 +38,16 @@ import urllib.error
 import urllib.request
 
 SCHEMA = 1
-TIERS = {"recommended", "supported", "experimental"}
+# The scale a model's smart and fast are on: dots on a row. The game reads the same number
+# (ModelSupplyPolicy.RatingSteps) and drops a rating outside it.
+RATING_STEPS = 5
+# What the document and each of its entries may carry, and nothing more (runtimes are checked by
+# shape in check_runtimes). A later field is added here in the same change that publishes it.
+DOCUMENT_FIELDS = {"schema", "revision", "models", "voice", "runtimes"}
+MODEL_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "vramMiB", "smart", "fast", "minGameVersion"}
+VOICE_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "licence", "minGameVersion"}
 SEGMENT = re.compile(r"^[A-Za-z0-9._-]+$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
-COMMIT = re.compile(r"^[0-9a-f]{7,40}$")
-DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 RUNTIME_BUILDS = {"vulkan", "cuda", "metal", "cpu"}
 RUNTIME_SYSTEMS = {"windows", "macos", "linux"}
 RUNTIME_ARCHES = {"x64", "arm64"}
@@ -110,69 +118,24 @@ def check_models(models, problems, ids=None, files=None, list_name="models", bas
             problems.append(where + ": sha256 is not 64 lower-case hex digits")
         if not (isinstance(m.get("bytes"), int) and m["bytes"] > 0):
             problems.append(where + ": bytes is not a positive integer")
-        for key in ("vramMiB", "contextTokens"):
-            if key in m and not (isinstance(m[key], int) and m[key] > 0):
-                problems.append(where + ": %s is not a positive integer" % key)
-        # A voice file is not a model anybody chooses between, so it has no tier. It is what a
+        if "vramMiB" in m and not (isinstance(m["vramMiB"], int) and not isinstance(m["vramMiB"], bool)
+                                   and m["vramMiB"] > 0):
+            problems.append(where + ": vramMiB is not a positive integer")
+        # A voice file is not a model anybody chooses between, so it is not rated. It is what a
         # companion speaks with, though, and the game's credits name it by its licence: the
         # speech model a cloned voice is spoken by and the recording it is cloned from.
         if voice:
             check_licence(where, m.get("licence"), problems)
-        if not voice and m.get("tier") not in TIERS:
-            problems.append(where + ": tier is not one of %s" % ", ".join(sorted(TIERS)))
-        if voice and "rigRuns" in m:
-            problems.append(where + ": a voice file is not rated; rigRuns belongs to a model")
-        elif "rigRuns" in m:
-            check_runs(where, m["rigRuns"], problems)
+        for key in () if voice else ("smart", "fast"):
+            if key in m and not (isinstance(m[key], int) and not isinstance(m[key], bool)
+                                 and 1 <= m[key] <= RATING_STEPS):
+                problems.append(where + ": %s is not a whole number from 1 to %d" % (key, RATING_STEPS))
+        extra = sorted(set(m) - (VOICE_FIELDS if voice else MODEL_FIELDS))
+        if extra:
+            problems.append(where + ": %s not part of a %s entry (the catalog is a download manifest)"
+                            % (", ".join(extra) + (" is" if len(extra) == 1 else " are"), "voice" if voice else "model"))
         if not (isinstance(m.get("minGameVersion"), int) and m["minGameVersion"] >= 0):
             problems.append(where + ": minGameVersion is not a non-negative integer")
-
-
-def number(value):
-    return isinstance(value, (int, float)) and not isinstance(value, bool)
-
-
-def check_runs(where, runs, problems):
-    # The behaviour rig's runs on a model, raw: what scripts/behaviour_smoke.py scored and where it
-    # ran. The game maps them to a row's smartness and speed (ModelRatingPolicy); the document never
-    # carries a grade. Written by `scripts/model_catalog.py rig` (docs/ops/model_catalog.md §5).
-    if not isinstance(runs, list):
-        problems.append(where + ": rigRuns is not a list")
-        return
-    names = set()
-    for j, r in enumerate(runs, 1):
-        rw = "%s.rigRuns[%d]" % (where, j)
-        if not isinstance(r, dict):
-            problems.append(rw + ": not an object")
-            continue
-        if not isinstance(r.get("run"), str) or not r["run"]:
-            problems.append(rw + ": no run name")
-        elif r["run"] in names:
-            problems.append(rw + ": run %s is listed twice" % r["run"])
-        else:
-            names.add(r["run"])
-        if not (isinstance(r.get("date"), str) and DATE.match(r["date"])):
-            problems.append(rw + ": date is not YYYY-MM-DD")
-        if not (isinstance(r.get("rig"), str) and COMMIT.match(r["rig"])):
-            problems.append(rw + ": rig is not a commit hash")
-        if not isinstance(r.get("variant"), str) or not r["variant"]:
-            problems.append(rw + ": no variant (the directive the run was given)")
-        of, errands = r.get("of"), r.get("errands")
-        if not (number(of) and of > 0):
-            problems.append(rw + ": of is not a positive number")
-        elif not (number(errands) and 0 <= errands <= of):
-            problems.append(rw + ": errands is not a score from 0 to of")
-        if not (number(r.get("sPerAct")) and r["sPerAct"] > 0):
-            problems.append(rw + ": sPerAct is not a positive number")
-        machine, provider = r.get("machine"), r.get("provider")
-        if (machine is None) == (provider is None):
-            problems.append(rw + ": needs exactly one of machine (a run served here) or provider (hosted)")
-        elif machine is not None:
-            if not (isinstance(machine, dict) and isinstance(machine.get("name"), str) and machine["name"]
-                    and number(machine.get("probeTokPerS")) and machine["probeTokPerS"] > 0):
-                problems.append(rw + ": machine needs a name and probeTokPerS, a positive number")
-        elif not (isinstance(provider, str) and provider):
-            problems.append(rw + ": provider is not a name")
 
 
 def check_licence(where, licence, problems):
@@ -295,20 +258,14 @@ def check(doc, base=None, base_dir=None, warnings=None, check_urls=False):
         problems.append("schema is %r; this validator checks schema %d" % (doc.get("schema"), SCHEMA))
     if not (isinstance(doc.get("revision"), int) and doc["revision"] >= 0):
         problems.append("revision is not a non-negative integer")
+    extra = sorted(set(doc) - DOCUMENT_FIELDS)
+    if extra:
+        problems.append("%s not part of the document (the catalog is a download manifest)"
+                        % (", ".join(extra) + (" is" if len(extra) == 1 else " are")))
     if not isinstance(doc.get("models"), list):
         problems.append("models is not a list")
     else:
         check_models(doc["models"], problems, ids, files)
-        # The rig the ratings are read on. A document with runs names it: without it the game
-        # counts no run, and every row it rates shows nothing.
-        rated = any(isinstance(m, dict) and m.get("rigRuns") for m in doc["models"])
-        if "rig" in doc or rated:
-            if not (isinstance(doc.get("rig"), str) and COMMIT.match(doc["rig"])):
-                problems.append("rig is not a commit hash (the rig the ratings are read on)")
-            elif rated and not any(isinstance(r, dict) and r.get("rig") == doc["rig"]
-                                   for m in doc["models"] if isinstance(m, dict)
-                                   for r in (m.get("rigRuns") or [])):
-                problems.append("no run is of the catalog's rig %s, so no row is rated" % doc["rig"])
     # The voice pack. Optional: a catalog written before it has none. Ids and file names are
     # unique across both lists, because both land in one folder.
     if not isinstance(doc.get("voice", []), list):
