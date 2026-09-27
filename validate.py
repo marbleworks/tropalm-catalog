@@ -32,10 +32,16 @@ contextWindow, maxTokens, temperature, systemPromptPrefix, latestUserSuffix; the
 is left out). `cloud` lists the models Tropalm Cloud serves: each a catalog id, the model the service
 is asked for (`model`, exactly as it routes on it), a name, its settings, what the model can be told
 about how hard it thinks (`effort`: {"kind": "levels", "levels": [...]}, {"kind": "thinking"} for on and
-off, or {"kind": "none"}), and the two ratings where the ledger has runs of it -- no file, so no source,
+off, {"kind": "budget"} for a cap in tokens, or {"kind": "none"}), and the two ratings where the ledger has runs of it -- no file, so no source,
 sha256, bytes or VRAM. `probe` is the one file the
 game's speed probe runs (a model entry's download fields, no row, no rating). Ids are unique across
 every list, since a row of the game is `catalog:<id>` whichever list it came from.
+
+Revision 10 (main, 2026-09-28): a row's settings may also name `defaultEffort`, the step its model
+is asked for when a companion follows the model's own default -- Tropalm's measured preset, one
+word in the model's own vocabulary ("off" for a model whose thinking is on or off). Left out, the
+model is asked nothing, which is its provider's default. On a cloud row that says its `effort`, the
+step has to be one of the steps that effort names.
 
 Exit 0 when the file is publishable, 1 with one line per problem otherwise.
 """
@@ -56,13 +62,13 @@ RATING_STEPS = 5
 # shape in check_runtimes). A later field is added here in the same change that publishes it.
 DOCUMENT_FIELDS = {"schema", "revision", "models", "cloud", "probe", "voice", "runtimes"}
 # What a default row of the game's model list has besides its model (ModelCatalog.ReadSettings).
-SETTINGS = {"contextWindow", "maxTokens", "temperature", "systemPromptPrefix", "latestUserSuffix"}
+SETTINGS = {"contextWindow", "maxTokens", "temperature", "systemPromptPrefix", "latestUserSuffix", "defaultEffort"}
 MODEL_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "vramMiB", "smart", "fast", "minGameVersion"} | SETTINGS
 PROBE_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "vramMiB", "minGameVersion"}
 VOICE_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "licence", "minGameVersion"}
 CLOUD_FIELDS = {"id", "model", "name", "smart", "fast", "effort"} | SETTINGS
 # The kinds of effort switch a model can have (ModelEffortKind), and what each may carry.
-EFFORT_FIELDS = {"levels": {"kind", "levels"}, "thinking": {"kind"}, "none": {"kind"}}
+EFFORT_FIELDS = {"levels": {"kind", "levels"}, "thinking": {"kind"}, "budget": {"kind"}, "none": {"kind"}}
 # The longest cloud model id the game reads (ModelSupplyPolicy.CloudModelIdMaxLength).
 CLOUD_ID_MAX = 200
 SEGMENT = re.compile(r"^[A-Za-z0-9._-]+$")
@@ -172,6 +178,16 @@ def check_settings(where, m, problems):
     for key in ("systemPromptPrefix", "latestUserSuffix"):
         if key in m and not isinstance(m[key], str):
             problems.append(where + ": %s is not a string" % key)
+    if "defaultEffort" in m:
+        step = m["defaultEffort"]
+        if not (isinstance(step, str) and step and step.strip() == step):
+            problems.append(where + ": defaultEffort is not a word")
+        elif isinstance(m.get("effort"), dict):
+            effort = m["effort"]
+            steps = {"levels": effort.get("levels") or [], "thinking": ["off", "on"],
+                     "budget": ["off", "low", "medium", "high"], "none": []}.get(effort.get("kind"), [])
+            if step not in steps:
+                problems.append(where + ": defaultEffort %s is not one of the steps its effort names" % step)
 
 
 def check_effort(where, effort, problems):

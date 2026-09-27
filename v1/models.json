@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 9,
+  "revision": 10,
   "models": [
     {
       "id": "qwen3.5-9b-q4_k_m",
@@ -17,6 +17,7 @@
       "contextWindow": 32768,
       "maxTokens": 1024,
       "temperature": 0.7,
+      "defaultEffort": "off",
       "smart": 5,
       "fast": 4,
       "minGameVersion": 1
