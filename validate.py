@@ -23,8 +23,19 @@ The catalog is a download manifest (owner, 2026-09-27): a model's information an
 it, and nothing else. A model may carry two ratings, smart and fast, whole numbers from 1 to
 RATING_STEPS that scripts/model_catalog.py rate computed from the repository's ledger of the
 behaviour rig's runs before publishing; the runs themselves are not published. A field that is not
-in the manifest's lists (DOCUMENT_FIELDS, MODEL_FIELDS, VOICE_FIELDS) is refused: the tier, the
-context window, the runs and the rig they were read on left the document in revision 7.
+in the manifest's lists (DOCUMENT_FIELDS, MODEL_FIELDS, VOICE_FIELDS, CLOUD_FIELDS) is refused: the
+tier, the context window, the runs and the rig they were read on left the document in revision 7.
+
+Revision 8 (owner, 2026-09-28): every entry of `models` and of `cloud` is one of Tropalm's default
+rows of the game's model list, read-only there, and carries the settings that row has (SETTINGS:
+contextWindow, maxTokens, temperature, systemPromptPrefix, latestUserSuffix; the game's own where one
+is left out). `cloud` lists the models Tropalm Cloud serves: each a catalog id, the model the service
+is asked for (`model`, exactly as it routes on it), a name, its settings, what the model can be told
+about how hard it thinks (`effort`: {"kind": "levels", "levels": [...]}, {"kind": "thinking"} for on and
+off, or {"kind": "none"}), and the two ratings where the ledger has runs of it -- no file, so no source,
+sha256, bytes or VRAM. `probe` is the one file the
+game's speed probe runs (a model entry's download fields, no row, no rating). Ids are unique across
+every list, since a row of the game is `catalog:<id>` whichever list it came from.
 
 Exit 0 when the file is publishable, 1 with one line per problem otherwise.
 """
@@ -43,9 +54,17 @@ SCHEMA = 1
 RATING_STEPS = 5
 # What the document and each of its entries may carry, and nothing more (runtimes are checked by
 # shape in check_runtimes). A later field is added here in the same change that publishes it.
-DOCUMENT_FIELDS = {"schema", "revision", "models", "voice", "runtimes"}
-MODEL_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "vramMiB", "smart", "fast", "minGameVersion"}
+DOCUMENT_FIELDS = {"schema", "revision", "models", "cloud", "probe", "voice", "runtimes"}
+# What a default row of the game's model list has besides its model (ModelCatalog.ReadSettings).
+SETTINGS = {"contextWindow", "maxTokens", "temperature", "systemPromptPrefix", "latestUserSuffix"}
+MODEL_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "vramMiB", "smart", "fast", "minGameVersion"} | SETTINGS
+PROBE_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "vramMiB", "minGameVersion"}
 VOICE_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "licence", "minGameVersion"}
+CLOUD_FIELDS = {"id", "model", "name", "smart", "fast", "effort"} | SETTINGS
+# The kinds of effort switch a model can have (ModelEffortKind), and what each may carry.
+EFFORT_FIELDS = {"levels": {"kind", "levels"}, "thinking": {"kind"}, "none": {"kind"}}
+# The longest cloud model id the game reads (ModelSupplyPolicy.CloudModelIdMaxLength).
+CLOUD_ID_MAX = 200
 SEGMENT = re.compile(r"^[A-Za-z0-9._-]+$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 RUNTIME_BUILDS = {"vulkan", "cuda", "metal", "cpu"}
@@ -78,6 +97,7 @@ def check_models(models, problems, ids=None, files=None, list_name="models", bas
     ids = set() if ids is None else ids
     files = set() if files is None else files
     voice = list_name == "voice"
+    probe = list_name == "probe"
     for i, m in enumerate(models, 1):
         where = "%s[%d] (%s)" % (list_name, i, m.get("id", "?") if isinstance(m, dict) else "?")
         if not isinstance(m, dict):
@@ -126,16 +146,86 @@ def check_models(models, problems, ids=None, files=None, list_name="models", bas
         # speech model a cloned voice is spoken by and the recording it is cloned from.
         if voice:
             check_licence(where, m.get("licence"), problems)
-        for key in () if voice else ("smart", "fast"):
+        for key in () if voice or probe else ("smart", "fast"):
             if key in m and not (isinstance(m[key], int) and not isinstance(m[key], bool)
                                  and 1 <= m[key] <= RATING_STEPS):
                 problems.append(where + ": %s is not a whole number from 1 to %d" % (key, RATING_STEPS))
-        extra = sorted(set(m) - (VOICE_FIELDS if voice else MODEL_FIELDS))
+        if not voice and not probe:
+            check_settings(where, m, problems)
+        allowed = VOICE_FIELDS if voice else PROBE_FIELDS if probe else MODEL_FIELDS
+        extra = sorted(set(m) - allowed)
         if extra:
             problems.append(where + ": %s not part of a %s entry (the catalog is a download manifest)"
-                            % (", ".join(extra) + (" is" if len(extra) == 1 else " are"), "voice" if voice else "model"))
+                            % (", ".join(extra) + (" is" if len(extra) == 1 else " are"), list_name.rstrip("s")))
         if not (isinstance(m.get("minGameVersion"), int) and m["minGameVersion"] >= 0):
             problems.append(where + ": minGameVersion is not a non-negative integer")
+
+
+def check_settings(where, m, problems):
+    # The settings a default row has. Left out, the game's own for its kind.
+    for key in ("contextWindow", "maxTokens"):
+        if key in m and not (isinstance(m[key], int) and not isinstance(m[key], bool) and m[key] > 0):
+            problems.append(where + ": %s is not a positive integer" % key)
+    if "temperature" in m and not (isinstance(m["temperature"], (int, float)) and not isinstance(m["temperature"], bool)
+                                   and 0 <= m["temperature"] < float("inf")):
+        problems.append(where + ": temperature is not a number from 0")
+    for key in ("systemPromptPrefix", "latestUserSuffix"):
+        if key in m and not isinstance(m[key], str):
+            problems.append(where + ": %s is not a string" % key)
+
+
+def check_effort(where, effort, problems):
+    # What the model can be told about how hard it thinks (ModelCatalog.ReadEffort). Levels are
+    # listed least first, each a non-empty word, none twice.
+    if not isinstance(effort, dict) or effort.get("kind") not in EFFORT_FIELDS:
+        problems.append(where + ": effort is not an object whose kind is one of %s"
+                        % ", ".join(sorted(EFFORT_FIELDS)))
+        return
+    kind = effort["kind"]
+    extra = sorted(set(effort) - EFFORT_FIELDS[kind])
+    if extra:
+        problems.append(where + ": effort of kind %s does not carry %s" % (kind, ", ".join(extra)))
+    if kind == "levels":
+        levels = effort.get("levels")
+        if not (isinstance(levels, list) and levels
+                and all(isinstance(level, str) and level.strip() == level and level for level in levels)
+                and len(set(levels)) == len(levels)):
+            problems.append(where + ": effort.levels is not a list of words, at least one, none twice")
+
+
+def check_cloud(models, problems, ids=None):
+    # The models Tropalm Cloud serves. The id is the catalog's key, one plain segment, unique across
+    # every list (a row of the game is catalog:<id>); the model is sent to the service as it is, so
+    # it is one word of printable characters.
+    ids = set() if ids is None else ids
+    for i, m in enumerate(models, 1):
+        where = "cloud[%d] (%s)" % (i, m.get("id", "?") if isinstance(m, dict) else "?")
+        if not isinstance(m, dict):
+            problems.append(where + ": not an object")
+            continue
+        if not segment(m.get("id")):
+            problems.append(where + ": id is not one plain segment")
+        elif m["id"] in ids:
+            problems.append(where + ": id used twice")
+        else:
+            ids.add(m["id"])
+        model = m.get("model")
+        if not (isinstance(model, str) and model and len(model) <= CLOUD_ID_MAX
+                and all(33 <= ord(c) < 127 for c in model)):
+            problems.append(where + ": model is not one word of printable ASCII, at most %d characters" % CLOUD_ID_MAX)
+        if not isinstance(m.get("name"), str) or not m["name"]:
+            problems.append(where + ": no name")
+        for key in ("smart", "fast"):
+            if key in m and not (isinstance(m[key], int) and not isinstance(m[key], bool)
+                                 and 1 <= m[key] <= RATING_STEPS):
+                problems.append(where + ": %s is not a whole number from 1 to %d" % (key, RATING_STEPS))
+        check_settings(where, m, problems)
+        if "effort" in m:
+            check_effort(where, m["effort"], problems)
+        extra = sorted(set(m) - CLOUD_FIELDS)
+        if extra:
+            problems.append(where + ": %s not part of a cloud entry (the catalog is a download manifest)"
+                            % (", ".join(extra) + (" is" if len(extra) == 1 else " are")))
 
 
 def check_licence(where, licence, problems):
@@ -266,6 +356,18 @@ def check(doc, base=None, base_dir=None, warnings=None, check_urls=False):
         problems.append("models is not a list")
     else:
         check_models(doc["models"], problems, ids, files)
+    # Tropalm Cloud's models. Optional: a catalog written before revision 8 has none.
+    if not isinstance(doc.get("cloud", []), list):
+        problems.append("cloud is not a list")
+    else:
+        check_cloud(doc.get("cloud", []), problems, ids)
+    # The speed probe's file: one at most. Optional: before revision 8 it was one of the models.
+    if not isinstance(doc.get("probe", []), list):
+        problems.append("probe is not a list")
+    elif len(doc.get("probe", [])) > 1:
+        problems.append("probe lists %d files; the speed probe runs one" % len(doc["probe"]))
+    else:
+        check_models(doc.get("probe", []), problems, ids, files, list_name="probe")
     # The voice pack. Optional: a catalog written before it has none. Ids and file names are
     # unique across both lists, because both land in one folder.
     if not isinstance(doc.get("voice", []), list):
@@ -305,8 +407,10 @@ def main(argv):
     for p in problems:
         print("catalog: " + p)
     if not problems:
-        print("catalog: revision %d, %d model(s), %d voice file(s), %d runtime(s) -- publishable"
-              % (doc["revision"], len(doc["models"]), len(doc.get("voice", [])), len(doc.get("runtimes", []))))
+        print("catalog: revision %d, %d model(s), %d cloud model(s), %d probe file(s), %d voice file(s), "
+              "%d runtime(s) -- publishable"
+              % (doc["revision"], len(doc["models"]), len(doc.get("cloud", [])), len(doc.get("probe", [])),
+                 len(doc.get("voice", [])), len(doc.get("runtimes", []))))
     return 1 if problems else 0
 
 

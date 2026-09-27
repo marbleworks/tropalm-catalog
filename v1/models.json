@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 7,
+  "revision": 8,
   "models": [
     {
       "id": "qwen3.5-9b-q4_k_m",
@@ -14,22 +14,11 @@
       "sha256": "03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8",
       "bytes": 5680522464,
       "vramMiB": 6628,
+      "contextWindow": 32768,
+      "maxTokens": 1024,
+      "temperature": 0.7,
       "smart": 5,
       "fast": 4,
-      "minGameVersion": 1
-    },
-    {
-      "id": "qwen3-4b-instruct-2507-q4_k_m",
-      "name": "Qwen3 4B Instruct 2507",
-      "file": "Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
-      "source": {
-        "repo": "unsloth/Qwen3-4B-Instruct-2507-GGUF",
-        "revision": "a06e946bb6b655725eafa393f4a9745d460374c9",
-        "path": "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
-      },
-      "sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
-      "bytes": 2497281120,
-      "vramMiB": 7217,
       "minGameVersion": 1
     },
     {
@@ -44,10 +33,15 @@
       "sha256": "96b9c0af5c77a4ecaabe3983175112b5ece763261c1ece12b2494b692a70dad7",
       "bytes": 12290628576,
       "vramMiB": 12827,
+      "contextWindow": 32768,
+      "maxTokens": 4096,
+      "temperature": 0.7,
       "smart": 5,
       "fast": 4,
       "minGameVersion": 1
-    },
+    }
+  ],
+  "probe": [
     {
       "id": "qwen2.5-0.5b-instruct-q4_k_m",
       "name": "Qwen2.5 0.5B Instruct",
@@ -61,6 +55,56 @@
       "bytes": 397808192,
       "vramMiB": 953,
       "minGameVersion": 1
+    }
+  ],
+  "cloud": [
+    {
+      "id": "gpt-6-luna",
+      "model": "openai/gpt-6-luna",
+      "name": "GPT-6 Luna",
+      "contextWindow": 32768,
+      "maxTokens": 4096,
+      "temperature": 0.7,
+      "effort": {
+        "kind": "levels",
+        "levels": [
+          "low",
+          "medium",
+          "high"
+        ]
+      }
+    },
+    {
+      "id": "deepseek-v4.1-flash",
+      "model": "deepseek/deepseek-v4.1-flash",
+      "name": "DeepSeek V4.1 Flash",
+      "contextWindow": 32768,
+      "maxTokens": 4096,
+      "temperature": 0.7,
+      "effort": {
+        "kind": "levels",
+        "levels": [
+          "low",
+          "medium",
+          "high"
+        ]
+      }
+    },
+    {
+      "id": "gpt-5.6-luna",
+      "model": "openai/gpt-5.6-luna",
+      "name": "GPT-5.6 Luna",
+      "contextWindow": 32768,
+      "maxTokens": 4096,
+      "temperature": 0.7,
+      "effort": {
+        "kind": "levels",
+        "levels": [
+          "low",
+          "medium",
+          "high"
+        ]
+      }
     }
   ],
   "voice": [
