@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 10,
+  "revision": 13,
   "models": [
     {
       "id": "qwen3.5-9b-q4_k_m",
@@ -19,7 +19,6 @@
       "temperature": 0.7,
       "defaultEffort": "off",
       "smart": 5,
-      "fast": 4,
       "minGameVersion": 1
     },
     {
@@ -38,7 +37,6 @@
       "maxTokens": 4096,
       "temperature": 0.7,
       "smart": 5,
-      "fast": 4,
       "minGameVersion": 1
     }
   ],
@@ -86,7 +84,6 @@
         "kind": "levels",
         "levels": [
           "low",
-          "medium",
           "high"
         ]
       }

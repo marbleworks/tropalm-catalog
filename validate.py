@@ -20,9 +20,9 @@ published yet (404: the release is the owner's to push) is a warning and does no
 part published at another length than the entry says is a problem.
 
 The catalog is a download manifest (owner, 2026-09-27): a model's information and where to fetch
-it, and nothing else. A model may carry two ratings, smart and fast, whole numbers from 1 to
-RATING_STEPS that scripts/model_catalog.py rate computed from the repository's ledger of the
-behaviour rig's runs before publishing; the runs themselves are not published. A field that is not
+it, and nothing else. A model may carry one rating, smart, a whole number from 1 to RATING_STEPS
+that scripts/model_catalog.py rate computed from the repository's ledger of the behaviour rig's
+runs before publishing; the runs themselves are not published. A field that is not
 in the manifest's lists (DOCUMENT_FIELDS, MODEL_FIELDS, VOICE_FIELDS, CLOUD_FIELDS) is refused: the
 tier, the context window, the runs and the rig they were read on left the document in revision 7.
 
@@ -32,7 +32,7 @@ contextWindow, maxTokens, temperature, systemPromptPrefix, latestUserSuffix; the
 is left out). `cloud` lists the models Tropalm Cloud serves: each a catalog id, the model the service
 is asked for (`model`, exactly as it routes on it), a name, its settings, what the model can be told
 about how hard it thinks (`effort`: {"kind": "levels", "levels": [...]}, {"kind": "thinking"} for on and
-off, {"kind": "budget"} for a cap in tokens, or {"kind": "none"}), and the two ratings where the ledger has runs of it -- no file, so no source,
+off, {"kind": "budget"} for a cap in tokens, or {"kind": "none"}), and the rating where the ledger has runs of it -- no file, so no source,
 sha256, bytes or VRAM. `probe` is the one file the
 game's speed probe runs (a model entry's download fields, no row, no rating). Ids are unique across
 every list, since a row of the game is `catalog:<id>` whichever list it came from.
@@ -42,6 +42,10 @@ is asked for when a companion follows the model's own default -- Tropalm's measu
 word in the model's own vocabulary ("off" for a model whose thinking is on or off). Left out, the
 model is asked nothing, which is its provider's default. On a cloud row that says its `effort`, the
 step has to be one of the steps that effort names.
+
+Revision 11 (owner, 2026-09-29): `fast` left `models` and `cloud` -- how fast a model is depends on
+the machine it runs on, and the seconds of the one machine the rig ran on read as a promise about
+the player's. A row that still carries it is refused; the game reads such a row with it ignored.
 
 Exit 0 when the file is publishable, 1 with one line per problem otherwise.
 """
@@ -55,7 +59,7 @@ import urllib.error
 import urllib.request
 
 SCHEMA = 1
-# The scale a model's smart and fast are on: dots on a row. The game reads the same number
+# The scale a model's smart is on: dots on a row. The game reads the same number
 # (ModelSupplyPolicy.RatingSteps) and drops a rating outside it.
 RATING_STEPS = 5
 # What the document and each of its entries may carry, and nothing more (runtimes are checked by
@@ -63,10 +67,10 @@ RATING_STEPS = 5
 DOCUMENT_FIELDS = {"schema", "revision", "models", "cloud", "probe", "voice", "runtimes"}
 # What a default row of the game's model list has besides its model (ModelCatalog.ReadSettings).
 SETTINGS = {"contextWindow", "maxTokens", "temperature", "systemPromptPrefix", "latestUserSuffix", "defaultEffort"}
-MODEL_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "vramMiB", "smart", "fast", "minGameVersion"} | SETTINGS
+MODEL_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "vramMiB", "smart", "minGameVersion"} | SETTINGS
 PROBE_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "vramMiB", "minGameVersion"}
 VOICE_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "licence", "minGameVersion"}
-CLOUD_FIELDS = {"id", "model", "name", "smart", "fast", "effort"} | SETTINGS
+CLOUD_FIELDS = {"id", "model", "name", "smart", "effort"} | SETTINGS
 # The kinds of effort switch a model can have (ModelEffortKind), and what each may carry.
 EFFORT_FIELDS = {"levels": {"kind", "levels"}, "thinking": {"kind"}, "budget": {"kind"}, "none": {"kind"}}
 # The longest cloud model id the game reads (ModelSupplyPolicy.CloudModelIdMaxLength).
@@ -152,11 +156,8 @@ def check_models(models, problems, ids=None, files=None, list_name="models", bas
         # speech model a cloned voice is spoken by and the recording it is cloned from.
         if voice:
             check_licence(where, m.get("licence"), problems)
-        for key in () if voice or probe else ("smart", "fast"):
-            if key in m and not (isinstance(m[key], int) and not isinstance(m[key], bool)
-                                 and 1 <= m[key] <= RATING_STEPS):
-                problems.append(where + ": %s is not a whole number from 1 to %d" % (key, RATING_STEPS))
         if not voice and not probe:
+            check_smart(where, m, problems)
             check_settings(where, m, problems)
         allowed = VOICE_FIELDS if voice else PROBE_FIELDS if probe else MODEL_FIELDS
         extra = sorted(set(m) - allowed)
@@ -165,6 +166,13 @@ def check_models(models, problems, ids=None, files=None, list_name="models", bas
                             % (", ".join(extra) + (" is" if len(extra) == 1 else " are"), list_name.rstrip("s")))
         if not (isinstance(m.get("minGameVersion"), int) and m["minGameVersion"] >= 0):
             problems.append(where + ": minGameVersion is not a non-negative integer")
+
+
+def check_smart(where, m, problems):
+    # The one rating a row may carry (ModelCatalog.ReadSmart). Left out, the row draws no dots.
+    if "smart" in m and not (isinstance(m["smart"], int) and not isinstance(m["smart"], bool)
+                             and 1 <= m["smart"] <= RATING_STEPS):
+        problems.append(where + ": smart is not a whole number from 1 to %d" % RATING_STEPS)
 
 
 def check_settings(where, m, problems):
@@ -231,10 +239,7 @@ def check_cloud(models, problems, ids=None):
             problems.append(where + ": model is not one word of printable ASCII, at most %d characters" % CLOUD_ID_MAX)
         if not isinstance(m.get("name"), str) or not m["name"]:
             problems.append(where + ": no name")
-        for key in ("smart", "fast"):
-            if key in m and not (isinstance(m[key], int) and not isinstance(m[key], bool)
-                                 and 1 <= m[key] <= RATING_STEPS):
-                problems.append(where + ": %s is not a whole number from 1 to %d" % (key, RATING_STEPS))
+        check_smart(where, m, problems)
         check_settings(where, m, problems)
         if "effort" in m:
             check_effort(where, m["effort"], problems)
