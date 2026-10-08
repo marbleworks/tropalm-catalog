@@ -47,6 +47,11 @@ Revision 11 (owner, 2026-09-29): `fast` left `models` and `cloud` -- how fast a 
 the machine it runs on, and the seconds of the one machine the rig ran on read as a promise about
 the player's. A row that still carries it is refused; the game reads such a row with it ignored.
 
+Revision 14 (owner, 2026-10-09: Claude Haiku 5.5 is offered beside the default, with a line in the
+Models tab's detail): a cloud row may name `descriptionKey`, the key in the game's locale tables of
+the line shown under its fields -- a key, not the words, since what a player reads is written in every
+table of the game. Lower-case segments of letters, digits and underscores joined by dots.
+
 Exit 0 when the file is publishable, 1 with one line per problem otherwise.
 """
 
@@ -70,7 +75,9 @@ SETTINGS = {"contextWindow", "maxTokens", "temperature", "systemPromptPrefix", "
 MODEL_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "vramMiB", "smart", "minGameVersion"} | SETTINGS
 PROBE_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "vramMiB", "minGameVersion"}
 VOICE_FIELDS = {"id", "name", "file", "source", "sha256", "bytes", "licence", "minGameVersion"}
-CLOUD_FIELDS = {"id", "model", "name", "smart", "effort"} | SETTINGS
+CLOUD_FIELDS = {"id", "model", "name", "smart", "effort", "descriptionKey"} | SETTINGS
+# The shape of a key of the game's locale tables (ModelCatalog.IsLocaleKey).
+LOCALE_KEY = re.compile(r"^[a-z0-9_]+(\.[a-z0-9_]+)*$")
 # The kinds of effort switch a model can have (ModelEffortKind), and what each may carry.
 EFFORT_FIELDS = {"levels": {"kind", "levels"}, "thinking": {"kind"}, "budget": {"kind"}, "none": {"kind"}}
 # The longest cloud model id the game reads (ModelSupplyPolicy.CloudModelIdMaxLength).
@@ -243,6 +250,9 @@ def check_cloud(models, problems, ids=None):
         check_settings(where, m, problems)
         if "effort" in m:
             check_effort(where, m["effort"], problems)
+        if "descriptionKey" in m and not (isinstance(m["descriptionKey"], str)
+                                          and LOCALE_KEY.match(m["descriptionKey"])):
+            problems.append(where + ": descriptionKey is not a key of the game's tables")
         extra = sorted(set(m) - CLOUD_FIELDS)
         if extra:
             problems.append(where + ": %s not part of a cloud entry (the catalog is a download manifest)"
