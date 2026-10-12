@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 14,
+  "revision": 15,
   "models": [
     {
       "id": "qwen3.5-9b-q4_k_m",
@@ -71,7 +71,8 @@
           "medium",
           "high"
         ]
-      }
+      },
+      "descriptionKey": "ui.llm.about.gpt_6_luna"
     },
     {
       "id": "deepseek-v4.1-flash",
@@ -86,7 +87,8 @@
           "low",
           "high"
         ]
-      }
+      },
+      "descriptionKey": "ui.llm.about.deepseek_v4_1_flash"
     },
     {
       "id": "claude-haiku-5.5",

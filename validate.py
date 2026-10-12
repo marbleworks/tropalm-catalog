@@ -52,6 +52,11 @@ Models tab's detail): a cloud row may name `descriptionKey`, the key in the game
 the line shown under its fields -- a key, not the words, since what a player reads is written in every
 table of the game. Lower-case segments of letters, digits and underscores joined by dots.
 
+Revision 15 (owner, 2026-10-12: a model entry has a description, and Tropalm's default entries say in
+it what kind of model each is): every cloud row names a descriptionKey, and the line that was Claude
+Haiku 5.5's (what choosing it changed beside the default) is replaced by its description. The game shows
+the key's words as the row's description in the Models tab's detail. The field is the same.
+
 Exit 0 when the file is publishable, 1 with one line per problem otherwise.
 """
 
