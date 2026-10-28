@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 18,
+  "revision": 19,
   "models": [
     {
       "id": "qwen3.5-9b-q4_k_m",
@@ -89,8 +89,8 @@
     },
     {
       "id": "deepseek-v4.1-flash",
-      "model": "deepseek/deepseek-v4.1-flash",
-      "name": "DeepSeek V4.1 Flash",
+      "model": "deepseek/deepseek-v4.1-flash-1017",
+      "name": "DeepSeek V4.1 Flash 1017",
       "contextWindow": 131072,
       "maxTokens": 4096,
       "temperature": 0.7,
