@@ -89,11 +89,16 @@ EFFORT_FIELDS = {"levels": {"kind", "levels"}, "thinking": {"kind"}, "budget": {
 CLOUD_ID_MAX = 200
 SEGMENT = re.compile(r"^[A-Za-z0-9._-]+$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
-RUNTIME_BUILDS = {"vulkan", "cuda", "metal", "cpu"}
+RUNTIME_BUILDS = {"vulkan", "cuda", "metal", "directml", "cpu"}
 RUNTIME_SYSTEMS = {"windows", "macos", "linux"}
 RUNTIME_ARCHES = {"x64", "arm64"}
-RELEASE_ASSET = re.compile(r"^https://github\.com/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+/releases/download/"
+RELEASE_ASSET = re.compile(r"^https://github\.com/([A-Za-z0-9._-]+)/([A-Za-z0-9._-]+)/releases/download/"
                            r"[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$")
+# The repositories a runtime's program may come from, as owner/repository: the game's own list
+# (ModelSupplyPolicy.RuntimeRepositories), which drops a runtime from any other, compared without
+# case as GitHub does (SEC-SUPPLY-1, 2026-10-31). Written out here because this file also runs on
+# its own in the published catalog's repository; RuntimeCatalogTests holds the two lists equal.
+RUNTIME_REPOSITORIES = {"ggml-org/whisper.cpp", "VOICEVOX/voicevox_engine", "marbleworks/tropalm-runtime"}
 # What a voice-pack file may end in: weights llama.cpp loads, the transcriber's ggml model, and a
 # recording a cloned voice is taken from. The game reads the same list (ModelCatalog.FileEndings).
 VOICE_ENDINGS = (".gguf", ".bin", ".wav")
@@ -293,10 +298,18 @@ def check_served(where, m, path, base_dir, problems):
         problems.append(where + ": %s does not hash to the entry's sha256" % path)
 
 
+def release_repository(url):
+    """The owner/repository of a GitHub release asset's address, or None for any other address."""
+    m = RELEASE_ASSET.match(url) if isinstance(url, str) else None
+    return m.group(1) + "/" + m.group(2) if m else None
+
+
 def release_asset(url):
-    """Whether url is a GitHub release asset and nothing else -- the game reads a runtime part by
-    the same rule (ModelCatalog.IsReleaseAsset) and drops any other address."""
-    return isinstance(url, str) and bool(RELEASE_ASSET.match(url))
+    """Whether url is a GitHub release asset of a repository the game takes programs from, and
+    nothing else -- the game reads a runtime part by the same rule (ModelCatalog.IsReleaseAsset)
+    and drops any other address."""
+    repo = release_repository(url)
+    return repo is not None and repo.lower() in {r.lower() for r in RUNTIME_REPOSITORIES}
 
 
 def check_runtimes(runtimes, problems, ids=None, warnings=None, check_urls=False):
@@ -346,7 +359,11 @@ def check_runtimes(runtimes, problems, ids=None, warnings=None, check_urls=False
             pw = "%s.parts[%d]" % (where, j)
             url = p.get("url", "") if isinstance(p, dict) else ""
             if not release_asset(url):
-                problems.append(pw + ": url is not https://github.com/<owner>/<repo>/releases/download/<tag>/<asset>")
+                repo = release_repository(url)
+                problems.append(pw + (": url is a release asset of %s, a repository the game takes no program "
+                                      "from (it takes them from %s)" % (repo, ", ".join(sorted(RUNTIME_REPOSITORIES)))
+                                      if repo else
+                                      ": url is not https://github.com/<owner>/<repo>/releases/download/<tag>/<asset>"))
             if not (isinstance(p, dict) and isinstance(p.get("sha256"), str) and SHA256.match(p["sha256"])):
                 problems.append(pw + ": sha256 is not 64 lower-case hex digits")
             if not (isinstance(p, dict) and isinstance(p.get("bytes"), int) and p["bytes"] > 0):

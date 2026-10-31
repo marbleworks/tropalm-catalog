@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 19,
+  "revision": 20,
   "models": [
     {
       "id": "qwen3.5-9b-q4_k_m",
@@ -317,6 +317,29 @@
       "licence": {
         "name": "MIT",
         "url": "https://github.com/ggml-org/whisper.cpp/blob/b5130/LICENSE"
+      },
+      "minGameVersion": 1
+    },
+    {
+      "id": "voicevox-engine-0.25.2-win-directml-x64",
+      "name": "VOICEVOX ENGINE 0.25.2 (DirectML)",
+      "program": "voicevox",
+      "build": "directml",
+      "os": "windows",
+      "arch": "x64",
+      "parts": [
+        {
+          "url": "https://github.com/VOICEVOX/voicevox_engine/releases/download/0.25.2/voicevox_engine-windows-directml-0.25.2.vvpp",
+          "sha256": "e3fa809397f2f771b29dd04452c9ede255dd894436ab8af764ac486f987297f1",
+          "bytes": 1903499910
+        }
+      ],
+      "unpack": "zip",
+      "unpackedBytes": 2180289526,
+      "exe": "run.exe",
+      "licence": {
+        "name": "LGPL-3.0 + VOICEVOX terms of use",
+        "url": "https://github.com/VOICEVOX/voicevox_engine/blob/0.25.2/LICENSE"
       },
       "minGameVersion": 1
     },
